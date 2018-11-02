@@ -1,0 +1,388 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: TreasureHunt
+host: "http://www.thetreasurehuntgroup.com:8842"
+basePath: /
+paths:
+  /users/signup:
+    post:
+      summary: Signs the user up and returns a user + session
+      parameters:
+        - name: request
+          in: body
+          description: JSON to create a user
+          required: true
+          schema:
+            $ref: '#/definitions/SignUpRequest'
+      responses:
+        "201":
+          description: Returns a user + session
+          schema:
+            $ref: '#/definitions/AuthenticationResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /users/login:
+    post:
+      summary: Logs user in and returns a user + session
+      parameters:
+        - name: request
+          in: body
+          description: JSON to log in a user
+          required: true
+          schema:
+            $ref: '#/definitions/LogInRequest'
+      responses:
+        "201":
+          description: Returns a user + session
+          schema:
+            $ref: '#/definitions/AuthenticationResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /users/logout:
+    post:
+      summary: Logs the user out
+      responses:
+        "201":
+          description: Empty response
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /users/{user_id}:
+    get:
+      summary: Retrieve user
+      parameters:
+        - name: user_id
+          in: path
+          description: ID of user
+          type: integer
+          required: true
+      responses:
+        "200":
+          description: User object
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+    put:
+      summary: Update user
+      parameters:
+        - name: user_id
+          in: path
+          description: ID of user
+          type: integer
+          required: true
+        - name: user
+          in: body
+          description: Update user request
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateUserRequest'
+      responses:
+        "200":
+          description: Updated user object
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /users/{user_id}/redeem:
+    post:
+      summary: Cash out user balance
+      parameters:
+        - name: user_id
+          in: path
+          description: ID of user
+          type: integer
+          required: true
+      responses:
+        "201":
+          description: User object with zero balance
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /games:
+    get:
+      summary: Search for current or upcoming games near the provided latitude and longitude
+      parameters:
+        - name: latitude
+          in: query
+          description: Latitude of user
+          type: number
+          required: true
+        - name: longitude
+          in: query
+          description: Longitude of user
+          type: number
+          required: true
+      responses:
+        "200":
+          description: The current and planned games intersected by the provided coordinates
+          schema:
+            $ref: '#/definitions/GamesResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /games/{game_id}:
+    get:
+      summary: Retrieve a specific game
+      parameters:
+        - name: game_id
+          in: path
+          description: ID of game
+          type: integer
+          required: true
+      responses:
+        "200":
+          description: The requested game
+          schema:
+            $ref: '#/definitions/Game'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /games/{game_id}/prizes:
+    get:
+      summary: Retrieve your status in the game for your current coordinates
+      parameters:
+        - name: game_id
+          in: path
+          description: ID of game
+          type: integer
+          required: true
+      responses:
+        "200":
+          description: The prizes for the game
+          schema:
+            $ref: '#/definitions/PrizesResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /games/{game_id}/status:
+    get:
+      summary: Retrieve your status in the game for your current coordinates
+      parameters:
+        - name: game_id
+          in: path
+          description: ID of game
+          type: integer
+          required: true
+        - name: latitude
+          in: query
+          description: Latitude of user
+          type: number
+          required: true
+        - name: longitude
+          in: query
+          description: Longitude of user
+          type: number
+          required: true
+      responses:
+        "200":
+          description: Your status (enum) within the game at the given coordinate. E.g. "VERY_HOT"
+          schema:
+            $ref: '#/definitions/Status'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+  /games/{game_id}/claim:
+    post:
+      summary: Claim the prize nearby your current location.
+      parameters:
+        - name: game_id
+          in: path
+          description: ID of game
+          type: integer
+          required: true
+        - name: latitude
+          in: query
+          description: Latitude of user
+          type: number
+          required: true
+        - name: longitude
+          in: query
+          description: Longitude of user
+          type: number
+          required: true
+      responses:
+        "201":
+          description: Updated user with a nonzero balance
+          schema:
+            $ref: '#/definitions/User'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/APIError'
+definitions:
+  SignUpRequest:
+    required:
+      - username
+      - password
+      - email
+    properties:
+      username:
+        description: Provided username
+        type: string
+      password:
+        description: Provided password
+        type: string
+      email:
+        description: Provided email
+        type: string
+  LogInRequest:
+    required:
+      - username
+      - password
+    properties:
+      username:
+        description: Provided username
+        type: string
+      password:
+        description: Provided password
+        type: string
+  UpdateUserRequest:
+    required:
+      - username
+      - password
+      - email
+      - payment_info
+    properties:
+      username:
+        type: string
+      passord:
+        type: string
+      email:
+        type: string
+      payment_info:
+        type: string
+  AuthenticationResponse:
+    required:
+      - session
+      - user
+    properties:
+      session:
+        type: string
+      user:
+        description: The logged in user
+        $ref: '#/definitions/User'
+  Coordinate:
+    required:
+      - latitude
+      - longitude
+    properties:
+      latitude:
+        description: Latitude
+        type: number
+      longitude:
+        description: Longitude
+        type: number
+  Prize:
+    required:
+      - id
+      - title
+      - hint
+      - is_claimed
+      - amount
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      hint:
+        type: string
+      is_claimed:
+        type: boolean
+      amount:
+        type: number
+  PrizesResponse:
+    required:
+      - prizes
+    properties:
+      prizes:
+        items:
+          $ref: '#/definitions/Prize'
+  Game:
+    required:
+      - id
+      - title
+      - description
+      - is_active
+      - center
+      - radius
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      description:
+        type: string
+      is_active:
+        type: boolean
+      center:
+        description: GPS coordinate of center of game area
+        $ref: '#/definitions/Coordinate'
+      radius:
+        description: Radius of game area in meters
+        type: number
+  GamesResponse:
+    required:
+      - games
+    properties:
+      games:
+        items:
+          $ref: '#/definitions/Game'
+  Status:
+    required:
+      - is_claimable
+      - proximity
+      - color
+      - radius
+    properties:
+      is_claimable:
+        type: boolean
+      proximity:
+        type: string
+      color:
+        description: Hex color e.g. #ABC123
+        type: string
+      radius:
+        description: Maximum distance from current location to prize, in meters
+        type: number
+  User:
+    required:
+      - id
+      - email
+      - username
+      - balance
+      - payment_info
+    properties:
+      id:
+        type: integer
+      email:
+        type: string
+      username:
+        type: string
+      balance:
+        type: number
+      payment_info:
+        type: string
+  APIError:
+    required:
+      - message
+    properties:
+      message:
+        type: string
