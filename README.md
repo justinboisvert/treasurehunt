@@ -1,4 +1,3 @@
-This is a rack based backend for the TreasureHunt application.
+Rack based backend for geolocation application TreasureHunt. 
 
-
-
+Requirements: Cuba, thin server, redis-ruby, GEOS support PostgreSQL
